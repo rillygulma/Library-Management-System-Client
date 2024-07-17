@@ -8,7 +8,7 @@ const UpdateBookStatus = () => {
     const [message, setMessage] = useState('');
     const [books, setBooks] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
-    const [loading, setLoading] = useState(false); // Loading state
+    const [loading, setLoading] = useState(false);
 
     const handleStatusChange = (event, id) => {
         setBookId(id);
@@ -18,11 +18,11 @@ const UpdateBookStatus = () => {
     const handleUpdate = async (id, currentStatus) => {
         setBookId(id);
         setStatus(currentStatus);
-        setLoading(true); // Start loading
+        setLoading(true);
         try {
             const accessToken = localStorage.getItem('token');
             const response = await axios.put(
-                `https://fubk-lms-backend.onrender.com/api/admin/updatebook/${id}`,
+                `http://localhost:5000/api/admin/updatebook/${id}`,
                 { status: currentStatus },
                 {
                     headers: {
@@ -34,19 +34,19 @@ const UpdateBookStatus = () => {
             console.log(response.data);
             setMessage(`Book status updated: ${response.data.message}`);
             toast.success('Book status updated successfully');
-            fetchBooks(); // Refresh the books list after update
+            fetchBooks();
         } catch (error) {
             setMessage(`Error: ${error.response ? error.response.data.message : 'Server is not responding'}`);
         } finally {
-            setLoading(false); // End loading
+            setLoading(false);
         }
     };
 
     const fetchBooks = async () => {
-        setLoading(true); // Start loading
+        setLoading(true);
         try {
             const accessToken = localStorage.getItem('token');
-            const response = await axios.get('https://fubk-lms-backend.onrender.com/api/users/allbooks', {
+            const response = await axios.get('http://localhost:5000/api/users/allbooks', {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${accessToken}`
@@ -62,7 +62,7 @@ const UpdateBookStatus = () => {
         } catch (error) {
             toast.error('Failed to fetch books');
         } finally {
-            setLoading(false); // End loading
+            setLoading(false);
         }
     };
 
@@ -94,7 +94,7 @@ const UpdateBookStatus = () => {
                         </div>
                     </div>
                 ) : (
-                    <table className="min-w-full  divide-y divide-gray-200">
+                    <table className="min-w-full divide-y divide-gray-200">
                         <thead>
                             <tr>
                                 <th className="px-6 py-3 bg-blue-300 text-left text-xs font-medium text-black uppercase tracking-wider">S/N</th>
@@ -129,8 +129,8 @@ const UpdateBookStatus = () => {
                                             book.status
                                         )}
                                     </td>
-                                    <td className="font-bold text-black uppercase bg-green-600 hover:bg-blue-700  px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 transition ease-in-out duration-300 mr-5">
-                                        {book.status === 'borrowed' && (
+                                    <td className="px-6 py-4 bg-blue-300 whitespace-nowrap text-sm text-black">
+                                        {book.status === 'pending' && (
                                             <button
                                                 onClick={() => handleUpdate(book._id, status)}
                                                 className="text-blue-600 hover:text-blue-900"

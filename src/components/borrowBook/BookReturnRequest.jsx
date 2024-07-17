@@ -1,20 +1,25 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 
 const BookReturnRequest = () => {
   const [formData, setFormData] = useState({
     email: '',
+    userId: '',
     bookId: '',
     bookTitle: '',
     role: '',
     returnDate: ''
   });
 
+  const navigate = useNavigate();
+
   useEffect(() => {
     // Fetch and set the current values from localStorage
     setFormData({
       email: localStorage.getItem('email') || '',
+      userId: localStorage.getItem('user_id') || '',
       bookId: localStorage.getItem('bookId') || '',
       bookTitle: '',
       role: localStorage.getItem('role') || '',
@@ -32,34 +37,37 @@ const BookReturnRequest = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
+    // Update formData with the latest values from localStorage
+    const updatedFormData = {
+      ...formData,
+      email: localStorage.getItem('email') || formData.email,
+      userId: localStorage.getItem('user_id') || formData.userId,
+      bookId: localStorage.getItem('bookId') || formData.bookId,
+      role: localStorage.getItem('role') || formData.role,
+    };
+
     const storedRole = localStorage.getItem('role');
-    if (formData.role !== storedRole) {
+    if (updatedFormData.role !== storedRole) {
       toast.error('Please select your correct role!');
       return; // Prevent form submission
     }
-  
+
     try {
       const accessToken = localStorage.getItem('token');
-      const response = await axios.post('https://fubk-lms-backend.onrender.com/api/users/returnBookRequest', formData, {
+      const response = await axios.post('http://localhost:5000/api/users/returnBookRequest', updatedFormData, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${accessToken}`
         }
       });
       console.log('Successfully:', response.data);
-      
-      // Clear form data except for fields from localStorage
-      setFormData({
-        email: localStorage.getItem('email') || '',
-        bookId: localStorage.getItem('bookId') || '',
-        bookTitle: '',
-        role: localStorage.getItem('role') || '',
-        returnDate: ''
-      });
-  
+
       // Optionally, show a success message
       toast.success('Return Book request submitted successfully!');
+
+      // Navigate to the borrow history page
+      navigate('/user/borrowHistory/');
     } catch (error) {
       console.error('There was an error!', error);
       toast.error('An error occurred while submitting your request.');
@@ -101,6 +109,19 @@ const BookReturnRequest = () => {
           type="email"
           name="email"
           value={formData.email}
+          onChange={handleChange}
+          required
+          disabled
+          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+        />
+      </div>
+
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700">User ID:</label>
+        <input
+          type="text"
+          name="userId"
+          value={formData.userId}
           onChange={handleChange}
           required
           disabled

@@ -35,7 +35,7 @@ const EditBook = () => {
     const fetchBookDetails = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get(`https://fubk-lms-backend.onrender.com/api/users/singlebook/${id}`, {
+        const response = await axios.get(`http://localhost:5000/api/users/singlebook/${id}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -63,7 +63,7 @@ const EditBook = () => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.put(
-        `https://fubk-lms-backend.onrender.com/api/admin/updatebook/${id}`,
+        `http://localhost:5000/api/admin/updatebook/${id}`,
         formData,
         {
           headers: {

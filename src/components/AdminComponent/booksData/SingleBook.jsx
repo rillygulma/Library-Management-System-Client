@@ -21,7 +21,7 @@ const SingleBook = () => {
           'Content-Type': 'application/json'
         };
 
-        const url = `https://fubk-lms-backend.onrender.com/api/users/singlebook/${id}`;
+        const url = `http://localhost:5000/api/users/singlebook/${id}`;
         const response = await axios.get(url, { headers });
         setBookData(response.data.data);
         localStorage.setItem("bookStatus", response.data.data.status);

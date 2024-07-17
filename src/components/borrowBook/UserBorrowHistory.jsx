@@ -1,151 +1,317 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import { FaTimes } from 'react-icons/fa';
 
-function UserBorrowHistory() {
-  const [data, setData] = useState([]);
-  const [error, setError] = useState('');
+const UserBorrowHistory = () => {
+  const [cartData, setCartData] = useState([]);
+  const [daysUntilReturn, setDaysUntilReturn] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedBook, setSelectedBook] = useState(null);
+  const [returnDate, setReturnDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [actionType, setActionType] = useState('');
+  const navigate = useNavigate();
+
+  const role = localStorage.getItem('role');
+  const userId = localStorage.getItem('user_id');
+  const token = localStorage.getItem('token');
+  const fullName = localStorage.getItem('fullName');
+  const email = localStorage.getItem('email');
+  const staffNo = localStorage.getItem('staffNo');
 
   useEffect(() => {
-    const storedUserId = localStorage.getItem('user_id');
-    console.log("StoredUserId:", storedUserId);
-    fetchData(storedUserId);
-  }, []); // Use an empty dependency array to ensure this runs only once on mount
+    const fetchCartData = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.get(`http://localhost:5000/api/users/${userId}/cartItems`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+        if (response.status === 200) {
+          if (response.data.length === 0) {
+            toast.error('No records found for the user.');
+          }
+          setCartData(response.data);
+        } else {
+          console.error('Failed to fetch cart data');
+        }
+      } catch (error) {
+        toast.error('Error fetching cart data.');
+        console.error('Error fetching cart data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const fetchData = async (userId) => {
-    console.log(userId);
-    if (!userId) {
-      setError('No User found with this ID.');
-      toast.error('No User found with this ID.');
+    if (userId && token) {
+      fetchCartData();
+    }
+  }, [userId, token]);
+
+  useEffect(() => {
+    const updateDaysUntilReturn = () => {
+      const updatedData = cartData.map((item) => {
+        const returnDate = new Date(item.checkoutForm.returnDate);
+        const today = new Date();
+        const diffInTime = returnDate.getTime() - today.getTime();
+        const diffInDays = Math.ceil(diffInTime / (1000 * 3600 * 24));
+        return {
+          ...item,
+          daysUntilReturn: diffInDays,
+        };
+      });
+      setDaysUntilReturn(updatedData);
+    };
+
+    updateDaysUntilReturn();
+    const interval = setInterval(updateDaysUntilReturn, 86400000);
+
+    return () => clearInterval(interval);
+  }, [cartData]);
+
+  const getDaysLeftText = (item) => {
+    if (item.status === 'processing') {
+      return 'You have 0 Days Left';
+    } else if (item.status === 'pending') {
+      return 'Yet to be Accepted';
+    } else if (item.status === 'accepted' && item.renewalStatus !== 'requested') {
+      return `${item.daysUntilReturn} DAYS LEFT`;
+    }
+    return '';
+  };
+
+  const getDaysLeftColor = (item) => {
+    if (item.status === 'processing') {
+      return 'text-red-500';
+    } else if (item.status === 'pending') {
+      return 'text-yellow-500';
+    } else if (item.status === 'accepted' && item.renewalStatus !== 'requested') {
+      return 'bg-green-600 text-white';
+    }
+    return 'text-green-600';
+  };
+
+  const handleReturnBook = async () => {
+    if (!selectedBook) {
+      toast.error('Please select a book.');
       return;
     }
 
     try {
-      const accessToken = localStorage.getItem('token');
-      const response = await axios.get(`https://fubk-lms-backend.onrender.com/api/users/borrowersHistory/${userId}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Accept': 'application/json'
+      const response = await axios.post(
+        `http://localhost:5000/api/users/${userId}/returnBook/${selectedBook.borrowedBookId._id}`,
+        {
+          returnDate: returnDate.toISOString(),
+          role,
+          userId,
+          fullName,
+          email,
+          staffNo,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
         }
-      });
+      );
 
-      const borrowerData = response.data;
-      // Check if borrowerData contains the expected data
-      if (!borrowerData || !borrowerData.cart || borrowerData.cart.length === 0) {
-        setError('No data found for this Id.');
-        toast.error('No data found for this Id.');
-        return;
+      if (response.status === 200) {
+        toast.success('Book returned successfully!');
+        navigate('/user/borrowHistory/');
       }
-
-      // Update the email in localStorage if it has changed
-      if (borrowerData.userId !== userId) {
-        localStorage.setItem('borrowerId', borrowerData.userId);
-      }
-
-      const borrowerId = borrowerData._id;
-      localStorage.setItem('borrowerId', borrowerId);
-      console.log(borrowerId);
-
-      const formattedData = borrowerData.cart.map((item, index) => ({
-        id: index,
-        email: item.borrower.email,
-        phoneNo: item.borrower.phoneNo,
-        role: item.borrower.role,
-        bookTitle: item.book.bookTitle,
-        authorName: item.book.authorName,
-        bookId: item.book._id,
-        borrowDate: item.checkoutForm.borrowDate,
-        returnDate: item.checkoutForm.returnDate,
-        status: item.status // assuming there's a status field in your data
-      }));
-
-      setData(formattedData);
-      setError('');
     } catch (error) {
-      if (error.response) {
-        if (error.response.status === 404) {
-          setError('No Users Record Found.');
-          toast.error('No Users Record Found.');
-        } else if (error.response.status === 500) {
-          setError('Server error occurred. Please try again later.');
-          toast.error('Server error occurred. Please try again later.');
-        } else {
-          setError('An error occurred while fetching data.');
-          toast.error('An error occurred while fetching data.');
-        }
+      if (error.response?.data?.error === 'Book not found in cart') {
+        toast.error('Book not found in your cart. Please refresh the page.');
       } else {
-        console.error('Error fetching data:', error);
-        setError('An error occurred while fetching data.');
-        toast.error('An error occurred while fetching data.');
+        toast.error('Error returning the book.');
+        console.error('Error returning the book:', error);
       }
     }
   };
 
+  const handleRenewBook = async () => {
+    if (!selectedBook) {
+      toast.error('Please select a book.');
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        `http://localhost:5000/api/users/${userId}/renewBook/${selectedBook.borrowedBookId._id}`,
+        {
+          returnDate: returnDate.toISOString(),
+          role,
+          fullName,
+          email,
+          staffNo,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        toast.success('Book Renewal Request Sent successfully!');
+        navigate('/user/borrowHistory/');
+      }
+    } catch (error) {
+      if (error.response?.data?.error === 'Book not found in cart') {
+        toast.error('Book not found in your cart. Please refresh the page.');
+      } else {
+        toast.error('Error renewing the book.');
+        console.error('Error renewing the book:', error);
+      }
+    }
+  };
+
+  const openDatePicker = (book, action) => {
+    setSelectedBook(book);
+    setActionType(action);
+    setShowDatePicker(true);
+  };
+
+  const handleDateChange = (date) => {
+    setReturnDate(date);
+  };
+
+  const closeDatePicker = () => {
+    setShowDatePicker(false);
+  };
+
+  const getMaxDate = () => {
+    if (!selectedBook) return new Date();
+
+    const returnDate = new Date(selectedBook.checkoutForm.returnDate);
+    const maxRenewalDate = new Date(returnDate.getTime() + 5 * 24 * 60 * 60 * 1000);
+    return maxRenewalDate;
+  };
+
+  const isButtonHidden = (status) => {
+    return status === 'processing' || status === 'returned' || status === 'pending';
+  };
+
   return (
-    <div className="px-4 py-10">
+    <div className="p-4">
       <h2 className="text-lg text-blue-500 text-center font-bold mb-2">User Books Borrow History:</h2>
-      {error && (
-        <div className="text-red-500">{error}</div>
+      <div className="flex justify-end mb-4">
+        <button
+          onClick={() => navigate('/previousRecord')}
+          className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-300"
+        >
+          Check Previous Records
+        </button>
+      </div>
+      {loading ? (
+        <div className="flex justify-center items-center h-64">
+          <div className="w-16 h-16 border-4 border-blue-400 border-dashed rounded-full animate-spin"></div>
+          <p className="ml-4 text-lg">Loading...</p>
+        </div>
+      ) : (
+        <table className="min-w-full bg-white border border-gray-200">
+          <thead>
+            <tr className="bg-gray-100 font-MyFont">
+              <th className="py-2 px-4 border-b">Serial No</th>
+              <th className="py-2 px-4 border-b">Book Title</th>
+              <th className="py-2 px-4 border-b">Author Name</th>
+              <th className="py-2 px-4 border-b">Borrow Date</th>
+              <th className="py-2 px-4 border-b">Return Date</th>
+              <th className="py-2 px-4 border-b">Status</th>
+              <th className="py-2 px-4 border-b">Renewal Status</th>
+              <th className="py-2 px-4 border-b">Days Until Return</th>
+              <th className="py-2 px-4 border-b">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {daysUntilReturn.map((item, index) => (
+              <tr key={item._id} className="hover:bg-gray-50">
+                <td className="py-2 px-4 border-b text-center">{index + 1}</td>
+                <td className="py-2 px-4 border-b">{item.bookTitle}</td>
+                <td className="py-2 px-4 border-b">{item.authorName}</td>
+                <td className="py-2 px-4 border-b">{new Date(item.checkoutForm.borrowDate).toLocaleDateString()}</td>
+                <td className="py-2 px-4 border-b">{new Date(item.checkoutForm.returnDate).toLocaleDateString()}</td>
+                <td className={`py-2 px-4 border-b text-center font-semibold ${getDaysLeftColor(item)}`}>
+                  {item.status.toUpperCase()}
+                </td>
+                <td className={`py-2 px-4 border-b text-center font-semibold ${getDaysLeftColor(item)}`}>
+                  {item.renewalStatus}
+                </td>
+                <td className={`py-2 px-4 border-b text-center font-semibold ${getDaysLeftColor(item)}`}>
+                  {getDaysLeftText(item)}
+                </td>
+                <td className="py-2 px-4 border-b text-center">
+                  {!isButtonHidden(item.status) && (
+                    <>
+                      <button
+                        onClick={() => openDatePicker(item, 'return')}
+                        className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition duration-300 mr-2"
+                      >
+                        Return Book
+                      </button>
+                      {item.renewalStatus !== 'renewed' && (
+                        <button
+                          onClick={() => openDatePicker(item, 'renew')}
+                          className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-300"
+                        >
+                          Renew Book
+                        </button>
+                      )}
+                    </>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       )}
-      {data.length > 0 && (
-        <div>
-          <div className="overflow-x-auto">
-            <table className="w-full table-auto">
-              <thead>
-                <tr>
-                  <th className="px-2 py-2">Serial Number</th>
-                  <th className="px-2 py-2">Email</th>
-                  <th className="px-2 py-2">Phone Number</th>
-                  <th className="px-2 py-2">Role</th>
-                  <th className="px-2 py-2">Book Title</th>
-                  <th className="px-2 py-2">Author Name</th>
-                  <th className="px-2 py-2">Status</th>
-                  <th className="px-2 py-2">Borrow Date</th>
-                  <th className="px-2 py-2">Return Date</th>
-                  <th className="px-2 py-2">Action</th>
-                  <th className="px-2 py-2">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.map((item, index) => (
-                  <tr key={item.id} className="text-xs sm:text-sm">
-                    <td className="border px-2 py-2">{index + 1}</td>
-                    <td className="border px-2 py-2">{item.email}</td>
-                    <td className="border px-2 py-2">{item.phoneNo}</td>
-                    <td className="border px-2 py-2">
-                      <button className="text-xs sm:text-sm bg-blue-500 text-white rounded-sm py-1 px-2 font-bold" disabled>
-                        {item.role.toUpperCase()}
-                      </button>
-                    </td>
-                    <td className="border px-2 py-2">{item.bookTitle}</td>
-                    <td className="border px-2 py-2">{item.authorName}</td>
-                    <td className="border px-2 py-2">
-                      <button disabled className={`text-xs sm:text-sm text-white rounded-sm py-1 px-2 font-bold ${item.status === 'pending' ? 'bg-yellow-500' : 'bg-green-500'}`}>
-                        {item.status.toUpperCase()}
-                      </button>
-                    </td>
-                    <td className="border px-2 py-2">{item.borrowDate.slice(0, 10)}</td>
-                    <td className="border px-2 py-2">{item.returnDate.slice(0, 10)}</td>
-                    <td className="border px-4 py-2">
-                    <a className="text-xs sm:text-sm bg-green-600 hover:bg-green-700 text-white rounded-md py-1 px-3 font-bold transition duration-300 ease-in-out" href='/user/returnbookrequest'>
-                    Return Book
-                    </a>
-                    </td>
-                    <td className="border px-4 py-2">
-                    <a className="text-xs sm:text-sm bg-green-600 hover:bg-green-700 text-white rounded-md py-1 px-3 font-bold transition duration-300 ease-in-out" href='/user/bookrenewalrequest'>
-                    Book Renewal
-                    </a>
-                    </td>
-                    {localStorage.setItem("bookId", item.bookId)}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      {showDatePicker && (
+        <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">{`Select ${actionType === 'renew' ? 'Renewal' : 'Return'} Date`}</h3>
+              <button onClick={closeDatePicker} className="text-red-500 hover:text-red-700">
+                <FaTimes />
+              </button>
+            </div>
+            <DatePicker
+              selected={returnDate}
+              onChange={handleDateChange}
+              dateFormat="yyyy-MM-dd"
+              minDate={new Date()}
+              maxDate={getMaxDate()}
+              inline
+            />
+            <div className="flex justify-end mt-4">
+              {actionType === 'renew' ? (
+                <button
+                  onClick={handleRenewBook}
+                  className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-300"
+                >
+                  Renew Book
+                </button>
+              ) : (
+                <button
+                  onClick={handleReturnBook}
+                  className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition duration-300"
+                >
+                  Return Book
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}
     </div>
   );
-}
+};
 
 export default UserBorrowHistory;

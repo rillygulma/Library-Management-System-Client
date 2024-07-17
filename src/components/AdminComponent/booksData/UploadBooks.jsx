@@ -66,7 +66,7 @@ const handleSubmit = async (e) => {
   try {
     // Send formData to your backend
     const response = await axios.post(
-      'https://fubk-lms-backend.onrender.com/api/admin/uploadbook', // Replace with your actual backend endpoint
+      'http://localhost:5000/api/admin/uploadbook', // Replace with your actual backend endpoint
       formData,
       {
         headers: {

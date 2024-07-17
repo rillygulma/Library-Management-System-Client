@@ -9,7 +9,7 @@ const BorrowedBookList = () => {
     const fetchData = async () => {
       try {
         const accessToken = localStorage.getItem('token');
-        const response = await axios.get('https://fubk-lms-backend.onrender.com/api/admin/allborrowers', {
+        const response = await axios.get('http://localhost:5000/api/admin/allborrowers', {
           headers: {
             Authorization: `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
@@ -28,7 +28,7 @@ const BorrowedBookList = () => {
   const handleDelete = async (id) => {
     try {
       const accessToken = localStorage.getItem('token');
-      const apiUrl = `https://fubk-lms-backend.onrender.com/api/deleteborrowedUsers/${id}`;
+      const apiUrl = `http://localhost:5000/api/deleteborrowedUsers/${id}`;
       await axios.delete(apiUrl, {
         headers: {
           Authorization: `Bearer ${accessToken}`,

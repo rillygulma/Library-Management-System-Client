@@ -50,7 +50,7 @@ const MyRoutes = () => {
           <Route path="/users/allbooks" element={<AllBooks />} />
           <Route path="/user/singlebook/:id" element={<SingleBook />} />
           <Route path="/user/bookrenewalrequest" element={<BookRenewalRequest />} />
-          <Route path="/user/returnbookrequest" element={<ReturnBookRequest />} />
+          <Route path="/user/returnbookrequest/:id" element={<ReturnBookRequest />} />
           <Route path="/admin/allbookrenewalrequest" element={<AllBookRenewalRequest />} />
           <Route path="/admin/allborrowbookrequest" element={<AllBorrowBookRequest />} />
           <Route path="/admin/allreturnbookrenewalrequest" element={<AllReturnBookRequest />} />

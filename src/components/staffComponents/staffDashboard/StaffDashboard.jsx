@@ -14,7 +14,7 @@ const StaffDashboard = () => {
     useEffect(() => {
         const accessToken = localStorage.getItem('token');
         if (accessToken) {
-            axios.get("https://fubk-lms-backend.onrender.com/api/users/allbooks", {
+            axios.get("http://localhost:5000/api/users/allbooks", {
                 headers: {
                     'Authorization': `Bearer ${accessToken}`,
                     'Content-Type': 'application/json'

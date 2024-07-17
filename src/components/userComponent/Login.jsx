@@ -28,7 +28,7 @@ const Login = () => {
     setIsLoading(true); // Start loading spinner
 
     try {
-      const response = await axios.post('https://fubk-lms-backend.onrender.com/api/users/login', {
+      const response = await axios.post('http://localhost:5000/api/users/login', {
         email,
         password,
       }, {
@@ -151,7 +151,7 @@ const Login = () => {
           </div>
           <p className="mt-4 font-bold text-gray-900">
             Don't have an account?{' '}
-            <Link to="/signup" className="font-bold text-white ml-2 hover:text-black">
+            <Link to="/register" className="font-bold text-white ml-2 hover:text-black">
               Sign up now
             </Link>
           </p>

@@ -21,7 +21,7 @@ const AdminDashboard = () => {
     const fetchData = async () => {
       try {
         const accessToken = localStorage.getItem('token');
-        const response = await axios.get('https://fubk-lms-backend.onrender.com/api/admin/allusers', {
+        const response = await axios.get('http://localhost:5000/api/admin/allusers', {
           headers: {
             'Authorization': `Bearer ${accessToken}`,
             'Content-Type': 'application/json'

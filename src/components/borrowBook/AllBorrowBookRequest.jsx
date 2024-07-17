@@ -4,13 +4,11 @@ import { toast } from 'react-hot-toast';
 
 const AllBorrowBookRequest = () => {
   const [borrowers, setBorrowers] = useState([]);
-  const [editStatusId, setEditStatusId] = useState(null);
-  const [selectedStatus, setSelectedStatus] = useState('');
-  const [borrowersId, setBorrowersId] = useState(localStorage.getItem('borrowerId') || '');
+  const [userId, setUserId] = useState(localStorage.getItem('user_id') || '');
 
   useEffect(() => {
     const handleStorageChange = () => {
-      setBorrowersId(localStorage.getItem('borrowerId'));
+      setUserId(localStorage.getItem('user_id'));
     };
 
     window.addEventListener('storage', handleStorageChange);
@@ -22,30 +20,47 @@ const AllBorrowBookRequest = () => {
 
   useEffect(() => {
     fetchBorrowers();
-  }, [borrowersId]);
+  }, [userId]);
 
   const fetchBorrowers = async () => {
     try {
       const accessToken = localStorage.getItem('token');
-      const response = await axios.get('https://fubk-lms-backend.onrender.com/api/user/allborrowers', {
+      const response = await axios.get('http://localhost:5000/api/admin/return-requests', {
         headers: {
           'Authorization': `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
       });
-      const allBorrowers = response.data.flatMap(item => item.cart);
-      console.log(allBorrowers);
+
+      console.log("Borrowed book response", response.data);
+      const allBorrowers = response.data.flatMap((user) =>
+        user.cart.map((book) => ({
+          userId: user._id,
+          fullName: user.fullName,
+          email: user.email,
+          phoneNo: user.phoneNo,
+          role: user.role,
+          bookTitle: book.bookTitle,
+          borrowedBookId: book.borrowedBookId._id,
+          checkoutForm: book.checkoutForm,
+          status: book.status,
+          department: user.department,
+          staffNo: user.staffNo,
+        }))
+      );
+
       setBorrowers(allBorrowers);
     } catch (error) {
       console.error('Error fetching borrowers:', error);
+      toast.error('Failed to fetch borrowers');
     }
   };
 
-  const updateStatus = async (borrowerId, bookId, status) => {
+  const updateStatus = async (userId, bookId, status) => {
     try {
       const accessToken = localStorage.getItem('token');
       await axios.put(
-        `https://fubk-lms-backend.onrender.com/api/admin/acceptborrowRequest/${borrowerId}/${bookId}`,
+        `http://localhost:5000/api/admin/accept-borrow-request/${userId}/${bookId}`,
         { status },
         {
           headers: {
@@ -66,7 +81,7 @@ const AllBorrowBookRequest = () => {
     try {
       const accessToken = localStorage.getItem('token');
       await axios.post(
-        `https://fubk-lms-backend.onrender.com/api/messages/send`,
+        `http://localhost:5000/api/messages/send`,
         { borrowerId, message: messageContent },
         {
           headers: {
@@ -82,26 +97,18 @@ const AllBorrowBookRequest = () => {
     }
   };
 
-  const handleStatusChange = (e) => {
-    setSelectedStatus(e.target.value);
-  };
-
-  const handleEditClick = (borrower) => {
-    setEditStatusId(borrower._id);
-    setSelectedStatus(borrower.status);
-  };
-
-  const handleSaveClick = (borrower) => {
-    updateStatus(borrowersId, borrower.book._id, selectedStatus);
-    setEditStatusId(null);
+  const handleStatusChange = (borrower, status) => {
+    updateStatus(borrower.userId, borrower.borrowedBookId, status);
   };
 
   const handleSendMessageClick = (borrower) => {
     const userMessage = prompt("Enter your message:");
     if (userMessage) {
-      sendMessage(borrower.borrower._id, userMessage);
+      sendMessage(borrower.userId, userMessage);
     }
   };
+
+  const filteredBorrowers = borrowers.filter((borrower) => borrower.status !== 'returned');
 
   return (
     <div className="container mx-auto p-4">
@@ -123,47 +130,32 @@ const AllBorrowBookRequest = () => {
             </tr>
           </thead>
           <tbody>
-            {borrowers.map((borrower, index) => (
-              <tr key={borrower._id}>
+            {filteredBorrowers.map((borrower, index) => (
+              <tr key={`${borrower.userId}-${borrower.borrowedBookId}`}>
                 <td className="py-2 px-4 border-b">{index + 1}</td>
-                <td className="py-2 px-4 border-b">{borrower.borrower.fullName}</td>
-                <td className="py-2 px-4 border-b">{borrower.borrower.email}</td>
-                <td className="py-2 px-4 border-b">{borrower.borrower.phoneNo}</td>
-                <td className="py-2 px-4 border-b uppercase">{borrower.borrower.role}</td>
-                <td className="py-2 px-4 border-b">{borrower.book.bookTitle}</td>
+                <td className="py-2 px-4 border-b">{borrower.fullName}</td>
+                <td className="py-2 px-4 border-b">{borrower.email}</td>
+                <td className="py-2 px-4 border-b">{borrower.phoneNo}</td>
+                <td className="py-2 px-4 border-b uppercase">{borrower.role}</td>
+                <td className="py-2 px-4 border-b">{borrower.bookTitle}</td>
                 <td className="py-2 px-4 border-b">{borrower.checkoutForm.returnDate.slice(0, 10)}</td>
-                <td className="py-2 px-4 border-b">
-                  {editStatusId === borrower._id ? (
-                    <select
-                      value={selectedStatus}
-                      onChange={handleStatusChange}
-                      className="p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm"
-                    >
-                      <option value="pending">Pending</option>
-                      <option value="accepted">Accepted</option>
-                      <option value="overdue">Overdue</option>
-                    </select>
-                  ) : (
-                    borrower.status
-                  )}
+                <td className={`py-2 px-4 border-b ${borrower.status === 'accepted' ? 'bg-green-500' : ''}`}>
+                  {borrower.status === 'processing' && <span className="bg-slate-500 text-white px-2 py-1 rounded">You have 0 Days Left</span>}
+                  {borrower.status === 'pending' && <span className="bg-yellow-500 text-white px-2 py-1 rounded">Yet to be Accepted</span>}
+                  {borrower.status !== 'processing' && borrower.status !== 'pending' && borrower.status}
                 </td>
                 <td className="py-2 px-4 border-b">
-                  {editStatusId === borrower._id ? (
-                    <button
-                      onClick={() => handleSaveClick(borrower)}
-                      className="bg-green-500 text-white px-4 py-2 rounded"
-                    >
-                      Save
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => handleEditClick(borrower)}
-                      className={`px-4 py-2 rounded ${borrower.status === 'accepted' ? 'bg-gray-500 cursor-not-allowed' : 'bg-blue-500'}`}
-                      disabled={borrower.status === 'accepted'}
-                    >
-                      {borrower.status === 'accepted' ? 'Edited' : 'Edit'}
-                    </button>
-                  )}
+                  <select
+                    onChange={(e) => handleStatusChange(borrower, e.target.value)}
+                    value={borrower.status}
+                    className={`px-4 py-2 rounded ${borrower.status === 'processing' || borrower.status === 'accepted' ? 'bg-gray-500 cursor-not-allowed' : 'bg-blue-500'}`}
+                    disabled={borrower.status === 'processing' || borrower.status === 'accepted'}
+                  >
+                    <option value="">Select Action</option>
+                    <option value="accepted" disabled={borrower.status === 'accepted'}>Accept</option>
+                    <option value="rejected">Reject</option>
+                    <option value="overdue">Overdue</option>
+                  </select>
                 </td>
                 <td className="py-2 px-4 border-b">
                   <button

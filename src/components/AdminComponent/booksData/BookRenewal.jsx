@@ -13,7 +13,7 @@ const BookRenewal = () => {
     try {
       const accessToken = localStorage.getItem('token');
       const response = await axios.put(
-        `https://fubk-lms-backend.onrender.com/api/update-return-date`,
+        `http://localhost:5000/api/update-return-date`,
         {
           borrowerId,
           bookTitle,

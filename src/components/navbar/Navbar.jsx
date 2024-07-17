@@ -5,9 +5,9 @@ import { Bars3BottomRightIcon, XMarkIcon } from '@heroicons/react/24/solid';
 const Navbar = () => {
   const links = [
     { name: 'HOME', link: "/" },
-    { name: 'STAFF', link: "/staff" },
-    { name: 'STUDENT', link: "/student" },
-    { name: 'ADMIN', link: "/admin" },
+    { name: 'STAFF', link: "/login" },
+    { name: 'STUDENT', link: "/login" },
+    { name: 'ADMIN', link: "/login" },
   ];
 
   const [isMobile, setIsMobile] = useState(false);

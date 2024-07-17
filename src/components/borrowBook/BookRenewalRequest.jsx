@@ -1,118 +1,134 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 
-const BookRenewalRequest = () => {
-  const [formData, setFormData] = useState({
-    email: '',
-    borrowerId: '',
-    bookTitle: '',
-    role: ''
-  });
+const ReturnedBooks = () => {
+    const [history, setHistory] = useState([]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
-  };
+    useEffect(() => {
+        fetchHistory();
+    }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-  
-    const storedRole = localStorage.getItem('role');
-    if (formData.role !== storedRole) {
-      toast.error('Please select your correct role!');
-      return; // Prevent form submission
-    }
-  
-    try {
-      const accessToken = localStorage.getItem('token');
-      const response = await axios.post('https://fubk-lms-backend.onrender.com/api/users/renewalbookrequest', formData, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`
+    const fetchHistory = async () => {
+        try {
+            const accessToken = localStorage.getItem('token');
+            const response = await axios.get('http://localhost:5000/api/admin/return-requests', {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const allReturns = response.data.map(user =>
+                user.cart.map(book => ({
+                    ...book,
+                    borrower: {
+                        _id: user._id,
+                        fullName: user.fullName,
+                        email: user.email,
+                        role: user.role,
+                        staffNo: user.staffNo,
+                        department: user.department,
+                        phoneNo: user.phoneNo,
+                    },
+                    borrowedBookId: book.borrowedBookId._id,
+                    returnDate: new Date(book.checkoutForm.returnDate).toLocaleDateString(),
+                }))
+            ).flat();
+
+            setHistory(allReturns);
+        } catch (error) {
+            console.error('Error fetching returned books:', error);
+            toast.error('Failed to fetch returned books');
         }
-      });
-      console.log('Successfully:', response.data);
-      
-      // Clear form data
-      setFormData({
-        email: '',
-        borrowerId: '',
-        bookTitle: '',
-        role: ''
-      });
-  
-      // Optionally, show a success message
-      toast.success('Renewal request submitted successfully!');
-    } catch (error) {
-      console.error('There was an error!', error);
-    }
-  };
+    };
 
-  return (
-    <form onSubmit={handleSubmit} className='bg-blue-300 max-w-md mx-auto mt-8 p-4 border rounded-lg shadow-md'>
-      <div className="mb-4">
-      <h1 className="text-2xl font-bold text-center mt-5 mb-10">Book Renewal Request</h1>
-        <label className="block text-sm font-medium text-gray-700">Book Title:</label>
-        <input
-          type="text"
-          name="bookTitle"
-          placeholder='Paste Your Book Title Here.'
-          value={formData.bookTitle}
-          onChange={handleChange}
-          required
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-        />
-      </div>
+    const handleAcceptReturn = async (userId, bookId) => {
+        try {
+            const accessToken = localStorage.getItem('token');
+            console.log(`Accepting return for User ID: ${userId}, Book ID: ${bookId}`);
 
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700">Borrower ID:</label>
-        <input
-          type="text"
-          name="borrowerId"
-          value={localStorage.getItem('borrowerId')}
-          onChange={handleChange}
-          required
-          disabled
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-        />
-      </div>
+            // Accept return endpoint
+            await axios.put(
+                `http://localhost:5000/api/admin/accept-borrow-request/${userId}/${bookId}`,
+                { status: 'returned' },
+                {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
 
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700">Email:</label>
-        <input
-          type="email"
-          name="email"
-          value={localStorage.getItem('email')}
-          onChange={handleChange}
-          required
-          disabled
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-        />
-      </div>
+            // Update book status endpoint
+            await axios.put(
+                `http://localhost:5000/api/admin/updatebook/${bookId}`,
+                { status: 'available' }, // Assuming status update logic
+                {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
 
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700">Role:</label>
-        <select
-          name="role"
-          value={localStorage.getItem('role')}
-          onChange={handleChange}
-          required
-          disabled
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-        >
-          <option value="staff">Staff</option>
-          <option value="student">Student</option>
-        </select>
-      </div>
-      <button type="submit" className="w-full py-2 px-4 bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-        Submit
-      </button>
-    </form>
-  );
+            toast.success('Return accepted successfully');
+
+            // Update history state by filtering out the accepted book
+            setHistory(prevHistory => prevHistory.filter(book => !(book.borrower._id === userId && book.borrowedBookId === bookId)));
+
+        } catch (error) {
+            console.error('Error accepting book return:', error);
+            if (error.response && error.response.data && error.response.data.error) {
+                toast.error(error.response.data.error);
+            } else {
+                toast.error('Failed to accept book return');
+            }
+        }
+    };
+
+    return (
+        <div className="container mx-auto p-4">
+            <h1 className="text-xl font-bold text-white text-center bg-slate-600 mb-4 uppercase">Returned Books</h1>
+            <div className="overflow-x-auto">
+                <table className="min-w-full bg-blue-300 font-MyFont border border-gray-300">
+                    <thead>
+                        <tr>
+                            <th className="py-2 px-4 border-b">#</th>
+                            <th className="py-2 px-4 border-b">Email</th>
+                            <th className="py-2 px-4 border-b">User ID</th>
+                            <th className="py-2 px-4 border-b">Book ID</th>
+                            <th className="py-2 px-4 border-b">Book Title</th>
+                            <th className="py-2 px-4 border-b">Role</th>
+                            <th className="py-2 px-4 border-b">Return Date</th>
+                            <th className="py-2 px-4 border-b">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {history.map((book, index) => (
+                            <tr key={`${book.borrowedBookId}-${index}`}>
+                                <td className="py-2 px-4 border-b">{index + 1}</td>
+                                <td className="py-2 px-4 border-b">{book.borrower.email}</td>
+                                <td className="py-2 px-4 border-b">{book.borrower._id}</td>
+                                <td className="py-2 px-4 border-b">{book.borrowedBookId}</td>
+                                <td className="py-2 px-4 border-b">{book.bookTitle}</td>
+                                <td className="py-2 px-4 border-b uppercase">{book.borrower.role}</td>
+                                <td className="py-2 px-4 border-b">{book.returnDate}</td>
+                                <td className="py-2 px-4 border-b">
+                                    <button
+                                        onClick={() => handleAcceptReturn(book.borrower._id, book.borrowedBookId)}
+                                        className="bg-green-500 text-white px-4 py-2 rounded"
+                                    >
+                                        Accept Return
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
 };
 
-export default BookRenewalRequest;
+export default ReturnedBooks;

@@ -18,7 +18,7 @@ const EditStaffUser = () => {
     const fetchUser = async () => {
       try {
         const accessToken = localStorage.getItem('token');
-        const response = await axios.get(`http://localhost:5000/api/admin/user/${id}`, {
+        const response = await axios.get(`https://fubk-library-management-sytem-server.onrender.com/api/admin/user/${id}`, {
           headers: {
             Authorization: `Bearer ${accessToken}`,
             'Content-Type': 'application/json'
@@ -49,7 +49,7 @@ const EditStaffUser = () => {
     const accessToken = localStorage.getItem('token');
 
     try {
-      const response = await axios.put(`http://localhost:5000/api/admin/updateuser/${id}`, formData, {
+      const response = await axios.put(`https://fubk-library-management-sytem-server.onrender.com/api/admin/updateuser/${id}`, formData, {
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${accessToken}`

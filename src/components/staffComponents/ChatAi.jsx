@@ -28,7 +28,7 @@ const ChatAi = () => {
     setIsLoading(true); // Set loading to true when message is sent
     try {
       const res = await axios.post(
-        'http://localhost:5000/api/fubk-ai',
+        'https://fubk-library-management-sytem-server.onrender.com/api/fubk-ai',
         JSON.stringify({ history, message }),
         {
           headers: {

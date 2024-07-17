@@ -11,7 +11,7 @@ const StudentuserData = () => {
       const fetchData = async () => {
         try {
           const accessToken = localStorage.getItem('token');
-          const response = await axios.get('http://localhost:5000/api/admin/allusers', {
+          const response = await axios.get('https://fubk-library-management-sytem-server.onrender.com/api/admin/allusers', {
             headers: {
               Authorization: `Bearer ${accessToken}`,
               'Content-Type': 'application/json'
@@ -38,7 +38,7 @@ const StudentuserData = () => {
       if (confirmDelete) {
         try {
           const accessToken = localStorage.getItem('token');
-          const response = await axios.delete(`http://localhost:5000/api/admin/deleteuser/${id}`, {
+          const response = await axios.delete(`https://fubk-library-management-sytem-server.onrender.com/api/admin/deleteuser/${id}`, {
             headers: {
               Authorization: `Bearer ${accessToken}`,
               'Content-Type': 'application/json'

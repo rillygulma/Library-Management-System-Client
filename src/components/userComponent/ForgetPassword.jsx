@@ -28,7 +28,7 @@ const ForgotPassword = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:5000/api/password/reset/request', { email });
+      const response = await axios.post('https://fubk-library-management-sytem-server.onrender.com/api/password/reset/request', { email });
       setMessage(response.data.message);
       setShowResetForm(true);
       toast.success("Reset token sent to email successfully!");
@@ -40,7 +40,7 @@ const ForgotPassword = () => {
   const handleResetSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.patch(`http://localhost:5000/api/password/reset/${token}`, { password });
+      const response = await axios.patch(`https://fubk-library-management-sytem-server.onrender.com/api/password/reset/${token}`, { password });
       setMessage(response.data.message);
       setShowResetForm(false);
       toast.success("Password reset successfully!");

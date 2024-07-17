@@ -24,7 +24,7 @@ const ManageBooks = () => {
         'Content-Type': 'application/json'
       };
 
-      const url = 'http://localhost:5000/api/users/allbooks';
+      const url = 'https://fubk-library-management-sytem-server.onrender.com/api/users/allbooks';
       const response = await axios.get(url, { headers });
       localStorage.setItem("bookStatus", response.data.data.status);
       setBooks(response.data.data);
@@ -42,7 +42,7 @@ const ManageBooks = () => {
   const handleDelete = async (bookId) => {
     try {
       const accessToken = localStorage.getItem('token');
-      await axios.delete(`http://localhost:5000/api/admin/deletebook/${bookId}`, {
+      await axios.delete(`https://fubk-library-management-sytem-server.onrender.com/api/admin/deletebook/${bookId}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json'

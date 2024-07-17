@@ -14,7 +14,7 @@ const StudentDashboard = () => {
     useEffect(() => {
         const accessToken = localStorage.getItem('token');
         if (accessToken) {
-            axios.get("http://localhost:5000/api/users/allbooks", {
+            axios.get("https://fubk-library-management-sytem-server.onrender.com/api/users/allbooks", {
                 headers: {
                     'Authorization': `Bearer ${accessToken}`,
                     'Content-Type': 'application/json'

@@ -13,7 +13,7 @@ const ALLBookRenewalRequest = () => {
     const fetchHistory = async () => {
         try {
             const accessToken = localStorage.getItem('token');
-            const response = await axios.get('http://localhost:5000/api/admin/renewal-requests', {
+            const response = await axios.get('https://fubk-library-management-sytem-server.onrender.com/api/admin/renewal-requests', {
                 headers: {
                     Authorization: `Bearer ${accessToken}`,
                     'Content-Type': 'application/json'
@@ -57,7 +57,7 @@ const ALLBookRenewalRequest = () => {
         try {
             const accessToken = localStorage.getItem('token');
             const response = await axios.post(
-                `http://localhost:5000/api/renewals/update-renewal-status`,
+                `https://fubk-library-management-sytem-server.onrender.com/api/renewals/update-renewal-status`,
                 { userId, bookId, newReturnDate },
                 {
                     headers: {
@@ -79,7 +79,7 @@ const ALLBookRenewalRequest = () => {
         try {
             const accessToken = localStorage.getItem('token');
             await axios.put(
-                `http://localhost:5000/api/admin/reject-borrow-request/${userId}/${bookId}`,
+                `https://fubk-library-management-sytem-server.onrender.com/api/admin/reject-borrow-request/${userId}/${bookId}`,
                 { status: 'rejected' },
                 {
                     headers: {

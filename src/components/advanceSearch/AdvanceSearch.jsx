@@ -28,7 +28,7 @@ const AdvanceSearch = () => {
     setIsLoading(true); 
     try {
       const accessToken = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5000/api/users/serialsearch', {
+      const response = await axios.get('https://fubk-library-management-sytem-server.onrender.com/api/users/serialsearch', {
         params: formData,
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -83,7 +83,7 @@ const AdvanceSearch = () => {
         return;
       }
 
-      await axios.put(`http://localhost:5000/api/admin/updatebook/${book._id}`, { status: 'pending' }, {
+      await axios.put(`https://fubk-library-management-sytem-server.onrender.com/api/admin/updatebook/${book._id}`, { status: 'pending' }, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
@@ -100,7 +100,7 @@ const AdvanceSearch = () => {
   const removeItemFromCart = async (bookId) => {
     try {
       const accessToken = localStorage.getItem('token');
-      await axios.put(`http://localhost:5000/api/admin/updatebook/${bookId}`, { status: 'available' }, {
+      await axios.put(`https://fubk-library-management-sytem-server.onrender.com/api/admin/updatebook/${bookId}`, { status: 'available' }, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
@@ -151,7 +151,7 @@ const AdvanceSearch = () => {
         userId,
       };
 
-      const response = await axios.post('http://localhost:5000/api/users/borrowers', dataToSave, {
+      const response = await axios.post('https://fubk-library-management-sytem-server.onrender.com/api/users/borrowers', dataToSave, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
@@ -174,7 +174,7 @@ const AdvanceSearch = () => {
   const checkIfUserHasBorrowed = async (userId) => {
     try {
       const accessToken = localStorage.getItem('token');
-      const response = await axios.get(`http://localhost:5000/api/users/borrowersHistory/${userId}`, {
+      const response = await axios.get(`https://fubk-library-management-sytem-server.onrender.com/api/users/borrowersHistory/${userId}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',

@@ -12,7 +12,7 @@ const ReturnedBooks = () => {
     const fetchHistory = async () => {
         try {
             const accessToken = localStorage.getItem('token');
-            const response = await axios.get('http://localhost:5000/api/admin/return-requests', {
+            const response = await axios.get('https://fubk-library-management-sytem-server.onrender.com/api/admin/return-requests', {
                 headers: {
                     Authorization: `Bearer ${accessToken}`,
                     'Content-Type': 'application/json'
@@ -50,7 +50,7 @@ const ReturnedBooks = () => {
 
             // Accept return endpoint
             await axios.put(
-                `http://localhost:5000/api/admin/accept-borrow-request/${userId}/${bookId}`,
+                `https://fubk-library-management-sytem-server.onrender.com/api/admin/accept-borrow-request/${userId}/${bookId}`,
                 { status: 'returned' },
                 {
                     headers: {
@@ -62,7 +62,7 @@ const ReturnedBooks = () => {
 
             // Update book status endpoint
             await axios.put(
-                `http://localhost:5000/api/admin/updatebook/${bookId}`,
+                `https://fubk-library-management-sytem-server.onrender.com/api/admin/updatebook/${bookId}`,
                 { status: 'available' }, // Assuming status update logic
                 {
                     headers: {

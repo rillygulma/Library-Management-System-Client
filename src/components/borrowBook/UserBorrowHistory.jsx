@@ -27,7 +27,7 @@ const UserBorrowHistory = () => {
     const fetchCartData = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(`http://localhost:5000/api/users/${userId}/cartItems`, {
+        const response = await axios.get(`https://fubk-library-management-sytem-server.onrender.com/api/users/${userId}/cartItems`, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -105,7 +105,7 @@ const UserBorrowHistory = () => {
 
     try {
       const response = await axios.post(
-        `http://localhost:5000/api/users/${userId}/returnBook/${selectedBook.borrowedBookId._id}`,
+        `https://fubk-library-management-sytem-server.onrender.com/api/users/${userId}/returnBook/${selectedBook.borrowedBookId._id}`,
         {
           returnDate: returnDate.toISOString(),
           role,
@@ -144,7 +144,7 @@ const UserBorrowHistory = () => {
 
     try {
       const response = await axios.post(
-        `http://localhost:5000/api/users/${userId}/renewBook/${selectedBook.borrowedBookId._id}`,
+        `https://fubk-library-management-sytem-server.onrender.com/api/users/${userId}/renewBook/${selectedBook.borrowedBookId._id}`,
         {
           returnDate: returnDate.toISOString(),
           role,

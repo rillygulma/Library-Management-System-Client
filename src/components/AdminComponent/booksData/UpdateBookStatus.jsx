@@ -22,7 +22,7 @@ const UpdateBookStatus = () => {
         try {
             const accessToken = localStorage.getItem('token');
             const response = await axios.put(
-                `https://fubk-library-management-sytem-server.onrender.com/api/admin/updatebook/${id}`,
+                `https://library-management-system-server-f0vl.onrender.com/api/admin/updatebook/${id}`,
                 { status: currentStatus },
                 {
                     headers: {
@@ -46,7 +46,7 @@ const UpdateBookStatus = () => {
         setLoading(true);
         try {
             const accessToken = localStorage.getItem('token');
-            const response = await axios.get('https://fubk-library-management-sytem-server.onrender.com/api/users/allbooks', {
+            const response = await axios.get('https://library-management-system-server-f0vl.onrender.com/api/users/allbooks', {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${accessToken}`

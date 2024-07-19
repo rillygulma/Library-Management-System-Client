@@ -25,7 +25,7 @@ const AllBorrowBookRequest = () => {
   const fetchBorrowers = async () => {
     try {
       const accessToken = localStorage.getItem('token');
-      const response = await axios.get('https://fubk-library-management-sytem-server.onrender.com/api/admin/return-requests', {
+      const response = await axios.get('https://library-management-system-server-f0vl.onrender.com/api/admin/return-requests', {
         headers: {
           'Authorization': `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
@@ -60,7 +60,7 @@ const AllBorrowBookRequest = () => {
     try {
       const accessToken = localStorage.getItem('token');
       await axios.put(
-        `https://fubk-library-management-sytem-server.onrender.com/api/admin/accept-borrow-request/${userId}/${bookId}`,
+        `https://library-management-system-server-f0vl.onrender.com/api/admin/accept-borrow-request/${userId}/${bookId}`,
         { status },
         {
           headers: {
@@ -81,7 +81,7 @@ const AllBorrowBookRequest = () => {
     try {
       const accessToken = localStorage.getItem('token');
       await axios.post(
-        `https://fubk-library-management-sytem-server.onrender.com/api/messages/send`,
+        `https://library-management-system-server-f0vl.onrender.com/api/messages/send`,
         { borrowerId, message: messageContent },
         {
           headers: {

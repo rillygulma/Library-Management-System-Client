@@ -28,7 +28,7 @@ const Login = () => {
     setIsLoading(true); // Start loading spinner
 
     try {
-      const response = await axios.post('https://fubk-library-management-sytem-server.onrender.com/api/users/login', {
+      const response = await axios.post('https://library-management-system-server-f0vl.onrender.com/api/users/login', {
         email,
         password,
       }, {

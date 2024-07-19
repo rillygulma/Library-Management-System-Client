@@ -34,7 +34,7 @@ const AllBooks = () => {
         if (!accessToken) {
           throw new Error('User not logged in. Please log in to view this page.');
         }
-        const response = await axios.get('https://fubk-library-management-sytem-server.onrender.com/api/users/allbooks', {
+        const response = await axios.get('https://library-management-system-server-f0vl.onrender.com/api/users/allbooks', {
           headers: {
             Authorization: `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
@@ -65,7 +65,7 @@ const AllBooks = () => {
   const checkIfUserHasBorrowed = async (userId) => {
     try {
       const accessToken = localStorage.getItem('token');
-      const response = await axios.get(`https://fubk-library-management-sytem-server.onrender.com/api/users/${userId}/check-eligibility`, {
+      const response = await axios.get(`https://library-management-system-server-f0vl.onrender.com/api/users/${userId}/check-eligibility`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
@@ -111,7 +111,7 @@ const AllBooks = () => {
         return;
       }
 
-      await axios.put(`https://fubk-library-management-sytem-server.onrender.com/api/admin/updatebook/${book._id}`, { status: 'pending' }, {
+      await axios.put(`https://library-management-system-server-f0vl.onrender.com/api/admin/updatebook/${book._id}`, { status: 'pending' }, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
@@ -129,7 +129,7 @@ const AllBooks = () => {
   const removeItemFromCart = async (bookId) => {
     try {
       const accessToken = localStorage.getItem('token');
-      await axios.put(`https://fubk-library-management-sytem-server.onrender.com/api/admin/updatebook/${bookId}`, { status: 'available' }, {
+      await axios.put(`https://library-management-system-server-f0vl.onrender.com/api/admin/updatebook/${bookId}`, { status: 'available' }, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
@@ -176,7 +176,7 @@ const AllBooks = () => {
         returnDate: calculateMaxReturnDate(checkout.borrowDate, item.userDetails.role).toISOString(),
       }));
 
-      const response = await axios.post(`https://fubk-library-management-sytem-server.onrender.com/api/users/${userId}/borrow`, cartItems, {
+      const response = await axios.post(`https://library-management-system-server-f0vl.onrender.com/api/users/${userId}/borrow`, cartItems, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',

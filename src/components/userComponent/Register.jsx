@@ -51,7 +51,7 @@ const Register = () => {
       delete dataToSend.staffNo;
     }
     try {
-      const response = await axios.post('https://fubk-library-management-sytem-server.onrender.com/api/users/register', dataToSend, {
+      const response = await axios.post('https://library-management-system-server-f0vl.onrender.com/api/users/register', dataToSend, {
         headers: {
           "Content-Type": "application/json"
         }

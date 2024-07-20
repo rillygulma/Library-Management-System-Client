@@ -3,9 +3,6 @@ services:
     name: your-vite-app
     env: node
     buildCommand: npm install && npm run build
-    startCommand: npm run preview
+    startCommand: npm run start
     staticPublishPath: dist
-    redirects:
-      - source: /*
-        destination: /index.html
-        statusCode: 200
+    port: 3000  # Ensure this port matches the one specified in vite.config.js

@@ -1,11 +1,10 @@
 {
   "name": "lms",
-  "private": true,
   "version": "0.0.0",
-  "type": "module",
   "scripts": {
+    "dev": "vite",
     "build": "vite build",
-    "start": "serve -s dist"
+    "serve": "vite preview"
   },
   "dependencies": {
     "@chatscope/chat-ui-kit-react": "^1.10.1",

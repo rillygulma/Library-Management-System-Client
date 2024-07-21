@@ -1,6 +1,7 @@
 {
   "name": "library-management-system-client",
   "version": "0.0.0",
+  "type": "module",
   "scripts": {
     "start": "vite",
     "build": "vite build",

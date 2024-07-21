@@ -1,0 +1,19 @@
+{
+  "routes": [
+    {
+      "source": "/old-page",
+      "destination": "/new-page",
+      "status": 301
+    },
+    {
+      "source": "/another-old-page",
+      "destination": "/another-new-page",
+      "status": 302
+    },
+    {
+      "source": "/old-blog/*",
+      "destination": "/new-blog/:splat",
+      "status": 301
+    }
+  ]
+}

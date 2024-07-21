@@ -1,8 +1,0 @@
-services:
-  - type: web
-    name: your-vite-app
-    env: node
-    buildCommand: npm install && npm run build
-    startCommand: npm run start
-    staticPublishPath: dist
-    port: 3000  # Ensure this port matches the one specified in vite.config.js

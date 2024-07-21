@@ -1,10 +1,10 @@
 {
-  "name": "lms",
+  "name": "library-management-system-client",
   "version": "0.0.0",
   "scripts": {
-    "dev": "vite",
+    "start": "vite",
     "build": "vite build",
-    "serve": "vite preview"
+    "dev": "vite dev"
   },
   "dependencies": {
     "@chatscope/chat-ui-kit-react": "^1.10.1",
